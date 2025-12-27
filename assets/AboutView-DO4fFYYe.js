@@ -1,0 +1,1 @@
+import{_ as s,c as t,a as o,o as n}from"./index-FIJn71bw.js";const c={},r={class:"home"};function a(l,e){return n(),t("div",r,[...e[0]||(e[0]=[o("h1",null,"這是關於我們",-1),o("p",null,"自定義的內容寫在這裡",-1)])])}const d=s(c,[["render",a]]);export{d as default};
