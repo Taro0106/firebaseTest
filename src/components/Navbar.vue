@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
-const brandName = ref(' firebase')
+const brandName = ref(' Favory')
 const navLinks = ref([
   { name: '首頁', path: '/' },
   { name: '漫畫收藏', path: '/about' }
