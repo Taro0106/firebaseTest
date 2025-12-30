@@ -27,8 +27,7 @@ const handleLogin = async () => {
   <div class="login-container">
     <div class="brand-section">
       <div class="brand-content">
-        <img src="../assets/pic/logo2.png" alt="Logo" class="main-logo" />
-        <h1 class="app-title">Favory</h1>
+        <img src="../pic/logo2.png" alt="Logo" class="main-logo" />
         <p class="app-slogan">紀錄每一份心動的二次元回憶</p>
       </div>
     </div>

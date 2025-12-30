@@ -1,89 +1,95 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { db } from '../firebase' 
-import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore'
+import { db, auth } from '../firebase' 
+import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, where } from 'firebase/firestore'
+import { onAuthStateChanged } from 'firebase/auth'
 
-// --- 1. 表單變數 ---
-const animeName = ref('')
+// --- 1. 狀態與表單變數 ---
+const isModalOpen = ref(false)
+const FavoryName = ref('')
 const imageUrl = ref('') 
 const category = ref('漫畫')
 const status = ref('未完結')
 const rating = ref(5)
 const comment = ref('')
-const isUploading = ref(false) // 新增：追蹤上傳狀態
-
+const isUploading = ref(false)
 const collectionList = ref([]) 
 
 // --- 2. Cloudinary 設定 ---
 const cloudName = "dn6r2yt4y"; 
 const uploadPreset = "Favory";
 
-// --- 3. 自定義上傳邏輯 (取代原本的 Widget) ---
 const uploadToCloudinary = async (event) => {
   const file = event.target.files[0]
   if (!file) return
-
   isUploading.value = true
-  
   const formData = new FormData()
   formData.append('file', file)
   formData.append('upload_preset', uploadPreset)
-
   try {
-    // 直接呼叫 API，不用等待視窗載入
     const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
       method: 'POST',
       body: formData
     })
-    
     const data = await response.json()
-    if (data.secure_url) {
-      imageUrl.value = data.secure_url
-    }
+    if (data.secure_url) imageUrl.value = data.secure_url
   } catch (error) {
-    console.error('上傳失敗：', error)
-    alert('圖片傳送失敗，小精靈鬧脾氣了 Q_Q')
+    alert('圖片傳送失敗 Q_Q')
   } finally {
     isUploading.value = false
   }
 }
 
-// --- 4. Firebase 邏輯 ---
+// --- 3. Firebase 邏輯：加入 UID 隔離 ---
 onMounted(() => {
-  const q = query(collection(db, "myAnimeList"), orderBy("createdAt", "desc"));
-  onSnapshot(q, (querySnapshot) => {
-    const list = [];
-    querySnapshot.forEach((doc) => {
-      list.push({ id: doc.id, ...doc.data() });
-    });
-    collectionList.value = list;
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // 關鍵：只抓取 uid 等於當前使用者的資料
+      const q = query(
+        collection(db, "myFavoryList"), 
+        where("uid", "==", user.uid), 
+        orderBy("createdAt", "desc")
+      );
+      onSnapshot(q, (querySnapshot) => {
+        const list = [];
+        querySnapshot.forEach((doc) => {
+          list.push({ id: doc.id, ...doc.data() });
+        });
+        collectionList.value = list;
+      });
+    } else {
+      collectionList.value = [];
+    }
   });
 })
 
 const addItem = async () => {
-  if (!animeName.value) return alert('請輸入作品名稱喔！');
-  if (!imageUrl.value) return alert('請幫作品挑一張美美的圖～');
+  if (!FavoryName.value) return alert('請輸入名稱！');
+  if (!imageUrl.value) return alert('請挑選圖片！');
+  if (!auth.currentUser) return alert('登入後才能收藏喔！');
 
   try {
-    await addDoc(collection(db, "myAnimeList"), {
-      name: animeName.value,
+    await addDoc(collection(db, "myFavoryList"), {
+      name: FavoryName.value,
       image: imageUrl.value,
       category: category.value,
       status: status.value,
       rating: rating.value,
       comment: comment.value,
+      uid: auth.currentUser.uid, // 紀錄擁有者 UID
       createdAt: new Date()
     });
-    // 成功後清空
-    animeName.value = ''; imageUrl.value = ''; comment.value = '';
+    // 成功後重置並關閉
+    FavoryName.value = ''; imageUrl.value = ''; comment.value = '';
+    isModalOpen.value = false;
   } catch (e) {
     console.error(e);
   }
 }
 
 const deleteItem = async (id) => {
-  if (confirm('確定要跟這部作品說掰掰嗎？')) {
-    await deleteDoc(doc(db, "myAnimeList", id));
+  if (confirm('要跟這部作品說掰掰嗎？')) {
+    await deleteDoc(doc(db, "myFavoryList", id));
   }
 }
 </script>
@@ -93,7 +99,7 @@ const deleteItem = async (id) => {
     <h1 class="main-title">🌸 我的收藏小本本 🌸</h1>
 
     <div class="form-card">
-      <input v-model="animeName" class="cute-input" placeholder="✨ 輸入作品名稱...">
+      <input v-model="FavoryName" class="cute-input" placeholder="✨ 輸入作品名稱...">
       
       <div class="upload-section">
         <label class="cute-upload-btn">
@@ -149,7 +155,16 @@ const deleteItem = async (id) => {
 
 <style scoped>
 /* 全域與標題 */
-.container { max-width: 900px; margin: 0 auto; padding: 40px 20px; font-family: 'Noto Sans TC', sans-serif; background-color: #fffafb; min-height: 100vh; }
+.container { 
+  max-width: 100%; 
+  margin: 0 auto; 
+  padding: 40px 20px; 
+  font-family: 'Noto Sans TC', sans-serif; 
+  background-color: #fffafb; 
+  min-height: 100vh; 
+  max-height: 100%;
+  overflow-y: scroll;
+}
 .main-title { text-align: center; color: #ff82ab; margin-bottom: 30px; font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(255, 182, 193, 0.5); }
 
 /* 表單卡片 */
