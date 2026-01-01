@@ -279,8 +279,6 @@ const closeModal = () => {
   }
 }
 
-/* 原有的清單 CSS 保持不變... 略 */
-
 /* --- Modal 樣式 --- */
 .modal-overlay {
   position: fixed;
@@ -308,6 +306,7 @@ const closeModal = () => {
   display: flex;
   flex-direction: column;
   animation: modalUp 0.3s ease-out;
+  padding: 20px;
 }
 
 .modal-body {
@@ -324,7 +323,7 @@ const closeModal = () => {
 .modal-img-container {
   width: 90%;
   flex-shrink: 0; /* 防止圖片被壓縮 */
-  margin: 20px auto 0px auto; /* 關鍵 2：上下留點間距，左右自動置中 */
+  margin: 0px auto; /* 關鍵 2：上下留點間距，左右自動置中 */
   background: #f9f9f9;
   border-radius: 20px;
 
@@ -340,7 +339,7 @@ const closeModal = () => {
 }
 
 .modal-info {
-  padding: 0px 25px 25px 25px;
+  padding: 0px 10px 5px 10px;
   width: 100%;
   /* 手機版不要讓 info 自己滾動，讓整個 body 滾動就好 */
 }
@@ -489,7 +488,7 @@ const closeModal = () => {
     flex-shrink: 0; /* 關鍵：強制不被擠壓 */
     height: 100%;
     overflow-y: auto; 
-    padding: 40px;
+    padding: 0px 20px;
     background: white;
   }
 }
