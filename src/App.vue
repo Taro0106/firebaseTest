@@ -13,7 +13,7 @@ const isLandingPage = computed(() => route.path === '/')
   <div class="app-layout">
     <Navbar v-if="!isLandingPage"/>
 
-    <main class="main-container">
+    <main :class="isLandingPage ? 'loginpage' : 'main-container'">
       <RouterView />
     </main>
   </div>
@@ -44,6 +44,19 @@ const isLandingPage = computed(() => route.path === '/')
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
+}
+
+/* 登入頁面容器：通常會想要乾乾淨淨，或是全螢幕居中 */
+.loginpage {
+  flex: 1;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 登入頁可以自訂背景，或是維持空白 */
+  background-color: #fffafb; 
 }
 
 /* 手機版適應：改回上下堆疊 */
