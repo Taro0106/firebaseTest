@@ -1,0 +1,1 @@
+import{_ as e,c as o,u as s,n as t}from"./index-DR2h0RFb.js";const c={class:"home-container"},_={__name:"HomeView",setup(a){return s(),(n,r)=>(t(),o("div",c," 主頁 "))}},p=e(_,[["__scopeId","data-v-1b2cb1e5"]]);export{p as default};
