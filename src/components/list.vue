@@ -1,33 +1,74 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue' // 記得補上 watch
+import { useRoute } from 'vue-router' // 引入路由工具
 import { db, auth } from '../firebase' 
 import { collection, query, orderBy, onSnapshot, deleteDoc, doc, where } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 
+const route = useRoute()
 const collectionList = ref([]) 
 const selectedItem = ref(null) // 儲存當前點選的作品
+const isLoading = ref(true)
+let unsubscribe = null // 用來存放監聽器，防止記憶體洩漏
+const fetchList = (user) => {
+  // 如果之前有監聽器，先關閉它（避免重複監聽）
+  if (unsubscribe) unsubscribe();
+
+  const listRef = collection(db, "myFavoryList");
+  const catParam = route.params.catName; // 從網址獲取分類名稱
+
+  // 1. 基本 Query (該使用者的資料)
+  let q;
+  
+  if (catParam) {
+    // 2. 如果網址有分類：過濾 UID + Category
+    q = query(
+      listRef, 
+      where("uid", "==", user.uid), 
+      where("category", "==", catParam), // 支援中文過濾
+      orderBy("createdAt", "desc")
+    );
+  } else {
+    // 3. 如果網址沒分類：只過濾 UID (顯示全部)
+    q = query(
+      listRef, 
+      where("uid", "==", user.uid), 
+      orderBy("createdAt", "desc")
+    );
+  }
+
+  // 開始監聽資料
+  unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const list = [];
+    querySnapshot.forEach((doc) => {
+      list.push({ id: doc.id, ...doc.data() });
+    });
+    collectionList.value = list;
+    isLoading.value = false;
+  }, (error) => {
+    console.error("Firestore 錯誤:", error);
+    // 如果報索引錯誤，這裡會印出 Firebase 提供的索引建立連結
+  });
+}
 
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      const q = query(
-        collection(db, "myFavoryList"), 
-        where("uid", "==", user.uid), 
-        orderBy("createdAt", "desc")
-      );
-      onSnapshot(q, (querySnapshot) => {
-        const list = [];
-        querySnapshot.forEach((doc) => {
-          list.push({ id: doc.id, ...doc.data() });
-        });
-        collectionList.value = list;
-      });
+      fetchList(user);
     } else {
       collectionList.value = [];
+      isLoading.value = false;
     }
   });
 })
 
+// ✨ 關鍵核心：監聽路由參數變化
+// 當點擊側邊欄不同分類時，重新執行 fetchList
+watch(() => route.params.catName, () => {
+  if (auth.currentUser) {
+    fetchList(auth.currentUser);
+  }
+});
 const deleteItem = async (id) => {
   if (confirm('要跟這部作品說掰掰嗎？ 🥺')) {
     await deleteDoc(doc(db, "myFavoryList", id));

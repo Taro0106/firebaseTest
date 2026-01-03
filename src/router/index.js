@@ -19,6 +19,11 @@ const router = createRouter({
       name: 'AddFavory',
       component: () => import('../views/AddFavoryView.vue'),
     },
+    {
+      path: '/category/:catName', 
+      name: 'CategoryList',
+      component: () => import('../views/ListView.vue') // 同樣指向 List.vue
+    }
   ],
 })
 

@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { auth } from '../firebase' // 確保路徑對應你的 firebase.js
+import { auth, db } from '../firebase' // 確保路徑對應你的 firebase.js
 import { onAuthStateChanged, signOut } from "firebase/auth"
 import { useRouter } from 'vue-router'
-
+// 關鍵修正：必須引入這些方法
+import { collection, query, where, getDocs } from 'firebase/firestore'
 const router = useRouter()
 
 // 1. 初始化使用者資料 (預設為未登入狀態)
@@ -22,6 +23,8 @@ onMounted(() => {
         name: firebaseUser.displayName || '神秘收藏家',
         avatar: firebaseUser.photoURL || 'https://cdn-icons-png.flaticon.com/512/3682/3682281.png'
       }
+      // 登入成功後，立刻執行抓取分類
+      fetchUserCategories(firebaseUser.uid);
       isLoggedIn.value = true
     } else {
       // 如果沒登入，回到預設狀態
@@ -30,6 +33,7 @@ onMounted(() => {
         avatar: 'https://cdn-icons-png.flaticon.com/512/3682/3682281.png'
       }
       isLoggedIn.value = false
+      categories.value = []; // 沒登入就清空
     }
   })
 })
@@ -45,7 +49,37 @@ const handleLogout = async () => {
 }
 
 // 分類邏輯保持不變
-const categories = ref(['漫畫', '動漫', '輕小說', '畫集'])
+// 用來存放去重後的分類
+const categories = ref([])
+
+// --- 核心邏輯：獲取該使用者的所有分類 ---
+const fetchUserCategories = async (uid) => {
+  try {
+    const q = query(
+      collection(db, "myFavoryList"), 
+      where("uid", "==", uid)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const allCats = [];
+    
+    querySnapshot.forEach((doc) => {
+      if (doc.data().category) {
+        allCats.push(doc.data().category);
+      }
+    });
+
+    // 使用 Set 進行 DISTINCT (去重)
+    categories.value = [...new Set(allCats)];
+    
+    // 如果想要確保總是有幾個基本選項，可以這樣寫：
+    // const basic = ['漫畫', '動漫'];
+    // categories.value = [...new Set([...basic, ...allCats])];
+    
+  } catch (error) {
+    console.error("抓取分類失敗", error);
+  }
+}
 const isCategoryModalOpen = ref(false)
 const toggleCategoryModal = () => {
   isCategoryModalOpen.value = !isCategoryModalOpen.value
@@ -65,6 +99,8 @@ const toggleCategoryModal = () => {
         <button v-if="isLoggedIn" @click="handleLogout" class="logout-btn">登出</button>
       </div>
 
+      <div class="divider"></div>
+
       <div class="menu-sections">
         <router-link to="/List" class="nav-link">
           <span class="icon"><i class="fa-regular fa-heart"></i></span> 全部收藏
@@ -73,8 +109,6 @@ const toggleCategoryModal = () => {
         <router-link to="/AddFavory" class="nav-link">
           <span class="icon"><i class="fa-solid fa-plus"></i></span> 新增
         </router-link>
-
-        <div class="divider"></div>
 
         <div class="category-section">
           <p class="section-label">我的分類</p>
@@ -145,7 +179,7 @@ const toggleCategoryModal = () => {
 .sidebar-desktop {
   width: 260px;
   height: 100vh;
-  position: relative;
+  position: sticky;
   left: 0;
   top: 0;
   background: white;
@@ -154,6 +188,49 @@ const toggleCategoryModal = () => {
   flex-direction: column;
   padding: 30px 20px;
   z-index: 1000;
+  overflow: hidden; /* 防止側邊欄本身出現滾輪 */
+}
+
+/* --- 2. 固定區域 (不參與滾動) --- */
+.brand, 
+.user-profile {
+  flex-shrink: 0; /* 絕對不被壓縮 */
+  padding: 20px 20px 10px 20px;
+}
+
+/* --- 3. 統一滾動區域 --- */
+.menu-sections {
+  flex: 1;            /* 填滿剩餘空間 */
+  overflow-y: auto;   /* 開啟滾動 */
+  padding: 0 20px 40px 20px; /* 底部留白，滾動到底部才美 */
+  
+  /* 隱藏滾動條 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.menu-sections::-webkit-scrollbar {
+  display: none;
+}
+
+/* --- 4. 內部分類區塊 (不需額外滾動) --- */
+.category-section {
+  margin-top: 10px;
+  /* 移除原本的 flex: 1 和 min-height: 0 */
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* 移除原本的 overflow-y: auto */
+}
+
+/* --- 額外小優化：讓 Divider 更明顯分隔固定區與滾動區 --- */
+.divider {
+  height: 1px;
+  background: #fff0f5;
+  margin: 5px 0;
+  flex-shrink: 0;
 }
 
 /* 如果是手機版，logo 區塊通常會隱藏或縮小 */
@@ -183,7 +260,6 @@ const toggleCategoryModal = () => {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  margin-bottom: 40px;
   padding: 20px;
   background: #fff5f7;
   border-radius: 20px;
