@@ -5,7 +5,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth"
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 // 關鍵修正：必須引入這些方法
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestore'
 const router = useRouter()
 
 // 1. 初始化使用者資料 (預設為未登入狀態)
@@ -93,17 +93,19 @@ const fetchUserCategories = async (uid) => {
       where("uid", "==", uid)
     );
     
-    const querySnapshot = await getDocs(q);
+    unsubscribe = onSnapshot(q, (snapshot) => {
     const allCats = [];
-    
-    querySnapshot.forEach((doc) => {
+    snapshot.forEach((doc) => {
       if (doc.data().category) {
         allCats.push(doc.data().category);
       }
     });
-
-    // 使用 Set 進行 DISTINCT (去重)
+    // 去重
     categories.value = [...new Set(allCats)];
+    console.log("分類已即時更新:", categories.value);
+  }, (error) => {
+    console.error("監聽分類失敗:", error);
+  });
     
     // 如果想要確保總是有幾個基本選項，可以這樣寫：
     // const basic = ['漫畫', '動漫'];

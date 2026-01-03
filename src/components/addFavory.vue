@@ -4,13 +4,15 @@ import { db, auth } from '../firebase'
 import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, where } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 import Swal from 'sweetalert2'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 // --- 1. 狀態與表單變數 ---
 const isModalOpen = ref(false)
 const FavoryName = ref('')
 const imageUrl = ref('') 
 const category = ref('')
 const status = ref('')
-const rating = ref(5)
+const rating = ref(0)
 const comment = ref('')
 const isUploading = ref(false)
 const collectionList = ref([]) 
@@ -105,8 +107,9 @@ const addItem = async () => {
     imageUrl.value = ''; 
     comment.value = '';
     category.value = ''; // 記得把分類也重置
-    rating.value = 5;    // 回到預設評分
+    rating.value = 0;    // 回到預設評分
     isModalOpen.value = false;
+    router.push('/Myhome/List');
 
   } catch (e) {
     console.error(e);
