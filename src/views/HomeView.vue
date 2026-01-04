@@ -1,139 +1,123 @@
 <script setup>
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { db, auth } from '../firebase'
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore'
+import { onAuthStateChanged } from 'firebase/auth'
+import TopNav from '../components/topNav.vue'
+import Hero from '../components/homeHero.vue'
 
-const router = useRouter()
+const recentItems = ref([])
+const currentUser = ref(null)
 
+// 抓取全站最新 5 筆
+const fetchRecentItems = async () => {
+  const q = query(
+    collection(db, "myFavoryList"),
+    orderBy("createdAt", "desc"),
+    limit(5)
+  )
+  const querySnapshot = await getDocs(q)
+  recentItems.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+}
+
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    currentUser.value = user
+  })
+  fetchRecentItems()
+})
 </script>
 
 <template>
   <div class="home-container">
-    主頁
+    <TopNav/>
+    <Hero/>
+
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
+    1<br>
   </div>
 </template>
 
 <style scoped>
 .home-container {
   display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100vh;
-  background-color: white;
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+
+  /* 🌸 主背景：淡奶白＋極柔粉 */
+  background:
+    radial-gradient(circle at 80% 20%, #fff3f6 0%, transparent 35%),
+    radial-gradient(circle at 20% 80%, #f3f6ff 0%, transparent 40%),
+    linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+
+  position: relative;
+  overflow-x: hidden;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* 左側品牌區 */
-.brand-section {
-  flex: 1.2; /* 佔據稍微多一點的空間 */
-  background: linear-gradient(135deg, #fff5f7 0%, #ffe4e1 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px;
+/* ✨ 柔霧裝飾（小顆、低存在感） */
+.home-container::before,
+.home-container::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+  filter: blur(80px);
+  opacity: 0.35;
+  pointer-events: none;
 }
 
-.brand-content {
-  text-align: center;
+/* 左上柔粉霧 */
+.home-container::before {
+  width: 260px;
+  height: 260px;
+  background: #ffdfe6;
+  top: 5%;
+  left: -120px;
 }
 
-.main-logo {
-  width: 180px;
-  filter: drop-shadow(0 10px 20px rgba(255, 182, 193, 0.4));
-  margin-bottom: 20px;
+/* 右下淡藍霧 */
+.home-container::after {
+  width: 240px;
+  height: 240px;
+  background: #e8edff;
+  bottom: 10%;
+  right: -120px;
 }
 
-.app-title {
-  font-size: 3.5rem;
-  color: #ff82ab;
-  margin: 10px 0;
-  letter-spacing: 2px;
+
+/* 針對 Chrome, Safari, 以及新版 Edge (WebKit) */
+.home-container::-webkit-scrollbar {
+  display: none;
 }
 
-.app-slogan {
-  color: #5d4037;
-  font-size: 1.2rem;
-  opacity: 0.8;
-}
-
-/* 右側登入區 */
-.auth-section {
-  flex: 0.8;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px;
-  background: white;
-}
-
-.login-card {
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
-}
-
-.login-card h2 {
-  color: #5d4037;
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-
-.login-card p {
-  color: #888;
-  margin-bottom: 40px;
-}
-
-/* Google 按鈕樣式 */
-.google-login-btn {
-  width: 100%;
-  padding: 15px;
-  border: 2px solid #ffe4e1;
-  background: white;
-  border-radius: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  font-size: 1.1rem;
-  color: #5d4037;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.google-login-btn:hover {
-  background: #fff5f7;
-  border-color: #ffb6c1;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(255, 182, 193, 0.2);
-}
-
-.google-icon {
-  width: 24px;
-}
-
-.footer-links {
-  margin-top: 30px;
-  font-size: 0.9rem;
-  color: #ccc;
-}
-
-/* --- 手機版自適應 --- */
-@media (max-width: 768px) {
-  .login-container {
-    flex-direction: column; /* 改為上下排列 */
-  }
-
-  .brand-section {
-    flex: 0.4; /* 上面佔比縮小 */
-    padding: 20px;
-  }
-
-  .main-logo { width: 100px; }
-  .app-title { font-size: 2rem; }
-  .app-slogan { font-size: 1rem; }
-
-  .auth-section {
-    flex: 0.6;
-    padding: 30px 20px;
-    border-radius: 30px 30px 0 0;
-    margin-top: -30px; /* 讓白色卡片稍微疊在粉色背景上，更有層次感 */
-  }
-}
 </style>
