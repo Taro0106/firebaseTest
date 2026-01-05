@@ -5,6 +5,7 @@ import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 import TopNav from '../components/topNav.vue'
 import Hero from '../components/homeHero.vue'
+import Randon from '../components/randonSelect.vue'
 
 const recentItems = ref([])
 const currentUser = ref(null)
@@ -13,8 +14,7 @@ const currentUser = ref(null)
 const fetchRecentItems = async () => {
   const q = query(
     collection(db, "myFavoryList"),
-    orderBy("createdAt", "desc"),
-    limit(5)
+    orderBy("createdAt", "desc")
   )
   const querySnapshot = await getDocs(q)
   recentItems.value = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
@@ -26,41 +26,19 @@ onMounted(() => {
   })
   fetchRecentItems()
 })
+
 </script>
 
 <template>
   <div class="home-container">
     <TopNav/>
     <Hero/>
-
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
-    1<br>
+    <!-- <Randon/> -->
+    
   </div>
+ 
 </template>
+
 
 <style scoped>
 .home-container {

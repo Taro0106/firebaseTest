@@ -54,15 +54,21 @@ onMounted(() => {
             <div class="card-content">
               <div class="left-info">
                 <h1 class="item-name">{{ item.name }}</h1>
-                <div class="rating-box">
+                <!-- <div class="rating-box">
                   <span class="star-text">★</span>
                   <span class="rating-num">{{ item.rating }}</span>
+                </div> -->
+                <div class="comment-text">
+                  <div class="comment-inner">
+                    {{ item.comment || '這名收藏家很懶，什麼都沒留下...' }}
+                  </div>
                 </div>
-                <p class="comment-text">{{ item.comment || '這位收藏家很懶，什麼都沒留下...' }}</p>
               </div>
 
               <div class="right-img">
                 <img :src="item.image" class="floating-img">
+                <div class="category-tag"># {{ item.category }}</div>
+                <div class="rating-tag">★ {{ item.rating }}</div>
               </div>
             </div>
           </div>
@@ -83,12 +89,15 @@ onMounted(() => {
 /* 3. 調整長方形本體 */
 .hero-card {
   position: relative;
-  background: #fff;
+  background: #ffffff;
+  border: 2px solid #ff799f;
   border-radius: 20px;
-  width: 100%;           /* 佔滿 slide 寬度 */
+  width: 95%;           /* 佔滿 slide 寬度 */
   height: 300px;         /* 長方形高度固定 */
   display: flex;
   margin: 0;             /* 移除 margin，靠 swiper 控制間距 */
+  box-shadow: 0 10px 20px rgba(255, 168, 174, 0.3);
+
 }
 
 /* 發布者標籤 */
@@ -121,7 +130,7 @@ onMounted(() => {
 
 .post-time {
   font-size: 0.75rem;
-  color: #bbb;
+  color: #333;
   /* 可以在時間前面加一個小圓點分隔線 */
   display: flex;
   align-items: center;
@@ -130,7 +139,7 @@ onMounted(() => {
 .post-time::before {
   content: "•";
   margin-right: 8px;
-  color: #eee;
+  color: #333;
 }
 .creator-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
 
@@ -141,18 +150,88 @@ onMounted(() => {
   padding: 20px 50px;
 }
 
-.left-info { flex: 1; padding-right: 50px; }
-.item-name { font-size: 2.5rem; margin: 0; color: #333; }
-.rating-box { color: #f1c40f; font-size: 1.5rem; margin: 10px 0; }
-.comment-text {
-  /* 基礎設定 */
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
+.left-info { 
+  flex: 1;           /* 佔據剩餘所有空間 */
+  min-width: 0;      /* 允許縮小到比文字窄 */
+  width: 0;          /* 🌟 這是終極大招：強制從 0 開始計算寬度，由 Flex 決定分配 */
+  padding-right: 50px;
+  display: flex;     /* 讓內部元素也遵循 Flex */
+  flex-direction: column; 
+  /* 🌟 關鍵：允許子元素溢出，這樣貼紙才看得到 */
+  overflow: visible;
+}
+.item-name {
+  font-size: 2.5rem;
+  margin: 0;
+  color: #fff;
+  font-family: 'Varela Round', 'M PLUS Rounded 1c', sans-serif;
+  /* 製作出類似白色邊框的效果 */
+  text-shadow: 
+    1px 1px 0 #ff799f,
+   -1px -1px 0 #ff799f,
+    1px -1px 0 #ff799f,
+   -1px 1px 0 #ff799f,
+    0px 4px 10px rgba(255, 121, 159, 0.2);
+  /* 單行省略 */
+  display: block;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
+  
+  /* 🌟 確保寬度不會超出父層 */
+  width: 90%;
+}
+.rating-box { color: #f1c40f; font-size: 1.5rem; margin: 10px 0; }
+/* --- 外層：貼紙容器（允許溢出，負責外框樣式） --- */
+.comment-text {
+  flex: 1;
+  position: relative; 
+  margin-top: 10px;
+  padding: 15px; /* 稍微調整 padding */
+  background: #ffffff;
+  border-radius: 12px;
+  border: 2px dashed #ffb6cb;
+  box-shadow: 4px 4px 0px rgba(255, 182, 203, 0.1);
+  
+  /* 🌟 重要：這裡不要寫 overflow: hidden，讓貼紙能飛出去 */
+  overflow: visible; 
+  display: flex;
+}
 
-  /* 消除警告的寫法 */
-  -webkit-line-clamp: 2; /* 針對 Webkit 核心 (Chrome, Safari, Edge) */
-  line-clamp: 2;         /* 🌟 標準屬性，加上這行黃線就會消失 */
+.comment-inner {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+  font-size: 0.9rem;
+  color: #666;
+
+  max-height: calc(1.6em * 5); /* 5 行 */
+  overflow: hidden;
+}
+
+/* --- 貼紙本體（維持原樣，現在絕對不會被砍了！） --- */
+.comment-text::before {
+  content: "";
+  font-size: 0.6rem;
+  font-weight: bold;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  width: 80px;
+  height: 24px;
+  background: rgba(255, 150, 180, 0.9);
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+  z-index: 10;
 }
 
 /* 右區容器：作為定位基準 */
@@ -173,14 +252,8 @@ onMounted(() => {
   height: 380px;
   object-fit: cover;
   border-radius: 16px;
-  
-  /* 視覺效果：白邊 + 深陰影讓它浮起來 */
-  border: 6px solid #ffb6cb; 
-  box-shadow: 0 20px 20px rgba(255, 168, 174, 0.3);
-  
   /* 確保它在最前面 */
   z-index: 2000;
-  
   /* 加上一個輕微的轉場，輪播切換時更順 */
   transition: transform 0.3s ease;
 }
@@ -204,6 +277,36 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: flex-end; /* 讓內容物貼齊底部 */
+}
+
+.category-tag {
+  position: absolute;
+  bottom: 20px;
+  right: -10px;
+  background: #ff799fe7;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(255, 121, 159, 0.3);
+  z-index: 2001;
+
+}
+
+.rating-tag {
+  position: absolute;
+  top: -110px;
+  left: -10px;
+  background: rgba(255, 255, 255, 0.877);
+  color: #ff799f;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(255, 121, 159, 0.3);
+  z-index: 2001;
+
 }
 
 /* --- 手機版 RWD 設計：維持橫向版型 --- */
@@ -250,12 +353,21 @@ onMounted(() => {
     margin: 5px 0;
   }
 
-  .comment-text {
-    font-size: 0.75rem;
-    /* 消除警告的寫法 */
-    -webkit-line-clamp: 2; /* 針對 Webkit 核心 (Chrome, Safari, Edge) */
-    line-clamp: 2;         /* 🌟 標準屬性，加上這行黃線就會消失 */
-  }
+ .comment-inner {
+  max-height: calc(1.6em * 2); /* 5 行 */
+  height: calc(1.6em * 2); /* 5 行 */
+}
+
+.comment-text::before {
+  top: -8px;
+  left: 50%;
+  width: 50px;
+  height: 12px;
+}
+
+.comment-text {
+  margin-top: 8px;
+}
 
   /* 右區：固定寬度並縮小圖片 */
   .right-img {
@@ -279,6 +391,20 @@ onMounted(() => {
   .creator-avatar { width: 25px; height: 25px; }
   .creator-name { display: none; }
   .post-time { font-size: 0.6rem; }
+  .category-tag {
+    bottom: 10px;
+    right: -20px;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+
+  }
+  .rating-tag {
+    top: -40px;
+    left: -10px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+
+  }
 }
 
 /* 針對更小的螢幕 (iPhone SE 等) */
@@ -289,6 +415,27 @@ onMounted(() => {
   .hero-card {
     height: 120px; /* 降低高度，讓比例協調 */
   }
+  .category-tag {
+    bottom: 10px;
+    right: -10px;
+    font-size: 0.6rem;
+    padding: 4px 7px;
+
+  }
+  .rating-tag {
+    top: -35px;
+    left: -10px;
+    font-size: 0.6rem;
+    padding: 4px 7px;
+
+  }
+   .comment-inner {
+  max-height: calc(1.6em * 1); /* 5 行 */
+  height: calc(1.6em * 1); /* 5 行 */
+}
   
 }
+
+
+
 </style>
