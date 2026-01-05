@@ -90,7 +90,6 @@ onMounted(() => {
 .hero-card {
   position: relative;
   background: #ffffff;
-  border: 2px solid #ff799f;
   border-radius: 20px;
   width: 95%;           /* 佔滿 slide 寬度 */
   height: 300px;         /* 長方形高度固定 */
@@ -359,7 +358,7 @@ onMounted(() => {
 }
 
 .comment-text::before {
-  top: -7px;
+  top: -5px;
   left: 50%;
   width: 50px;
   height: 12px;
