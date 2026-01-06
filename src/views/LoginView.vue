@@ -34,6 +34,20 @@ const syncUserToDatabase = async (user) => {
   }
 }
 
+onMounted(async () => {
+  try {
+    const result = await getRedirectResult(auth)
+    if (result) {
+      // --- 手機版登入成功 ---
+      await syncUserToDatabase(result.user); // 🌟 先同步資料再跳轉
+      console.log("登入成功:", result.user.displayName)
+      router.push('/Home')
+    }
+  } catch (error) {
+    console.error("重定向登入出錯:", error.code)
+  }
+})
+
 const handleLogin = async () => {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
   try {
