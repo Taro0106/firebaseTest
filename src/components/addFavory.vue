@@ -409,6 +409,9 @@ textarea {
 
 /* 📱 RWD：小於 768px 時上下排 */
 @media (max-width: 768px) {
+  .container {
+    margin: 20px auto 100px;
+  }
   .main-content {
     flex-direction: column;
     align-items: center;

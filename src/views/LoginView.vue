@@ -1,25 +1,38 @@
 <script setup>
 import { onMounted } from 'vue'
-import { auth, provider } from '../firebase'
+import { auth, provider, db } from '../firebase' // 🌟 記得匯入 db
 import { signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth"
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore' // 🌟 匯入 Firestore 方法
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// --- 關鍵：處理手機版登入跳轉回來後的結果 ---
-onMounted(async () => {
-  try {
-    const result = await getRedirectResult(auth)
-    if (result) {
-      // 這代表剛從 Google 跳轉回來並成功登入了
-      console.log("登入成功:", result.user.displayName)
-      router.push('/Home') // 強制跳轉到清單頁
-    }
-  } catch (error) {
-    console.error("重定向登入出錯:", error.code)
-    // 如果報錯是 auth/unauthorized-domain，代表 GitHub 網域沒加進白名單
+// 🌟 核心功能：同步使用者資料到 users 集合
+const syncUserToDatabase = async (user) => {
+  if (!user) return;
+  
+  const userRef = doc(db, 'users', user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    // 新使用者：初始化資料，這是「名人堂」的數據基礎
+    console.log("歡迎新收藏家！正在建立個人檔案...");
+    await setDoc(userRef, {
+      uid: user.uid,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      totalCollections: 0, // 初始化計數器
+      createdAt: serverTimestamp(),
+      lastLogin: serverTimestamp()
+    });
+  } else {
+    // 舊使用者：僅更新最後登入時間與頭像（萬一 Google 頭像換了）
+    await setDoc(userRef, { 
+      lastLogin: serverTimestamp(),
+      photoURL: user.photoURL // 自動同步最新的 Google 頭像
+    }, { merge: true });
   }
-})
+}
 
 const handleLogin = async () => {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
