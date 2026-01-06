@@ -68,7 +68,7 @@ const getRankNumber = (user, index) => {
   <section class="podium-section" v-if="!loading">
     <div class="section-header">
       <h2 class="section-title">收藏家名人堂</h2>
-      <p class="section-subtitle">向頂尖收藏家致敬 ✨</p>
+      <p class="section-subtitle">向頂尖收藏家致敬 </p>
     </div>
 
     <div class="podium-container">

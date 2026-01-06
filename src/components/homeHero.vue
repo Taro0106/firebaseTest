@@ -208,7 +208,7 @@ onMounted(() => {
   font-size: 0.9rem;
   color: #666;
 
-  max-height: calc(1.6em * 5); /* 5 行 */
+  max-height: calc(1.6em * 7); /* 5 行 */
   overflow: hidden;
 }
 
