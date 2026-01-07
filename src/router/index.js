@@ -29,6 +29,11 @@ const router = createRouter({
           path: 'category/:catName', 
           name: 'CategoryList',
           component: () => import('../views/ListView.vue')
+        },
+        {
+          path: 'PersonalData', 
+          name: 'PersonalData',
+          component: () => import('../views/PersonalDataView.vue')
         }
       ]
     },

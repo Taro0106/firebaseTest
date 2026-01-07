@@ -153,6 +153,10 @@ const toggleCategoryModal = () => {
       <div class="divider"></div>
 
       <div class="menu-sections">
+        <router-link to="/Myhome/PersonalData" class="nav-link">
+          <span class="icon"><i class="fa-solid fa-address-card"></i></span> 個人資料
+        </router-link>
+
         <router-link to="/Myhome/List" class="nav-link">
           <span class="icon"><i class="fa-regular fa-heart"></i></span> 全部收藏
         </router-link>
@@ -199,7 +203,7 @@ const toggleCategoryModal = () => {
         <span class="label">分類</span>
       </button>
 
-      <router-link to="/profile" class="mobile-nav-item">
+      <router-link to="/Myhome/PersonalData" class="mobile-nav-item">
         <img :src="user.avatar" class="mini-avatar">
         <span class="label">帳號</span>
       </router-link>
