@@ -26,10 +26,9 @@ const syncUserToDatabase = async (user) => {
       lastLogin: serverTimestamp()
     });
   } else {
-    // 舊使用者：僅更新最後登入時間與頭像（萬一 Google 頭像換了）
+    // 舊使用者：僅更新最後登入時間
     await setDoc(userRef, { 
       lastLogin: serverTimestamp(),
-      photoURL: user.photoURL // 自動同步最新的 Google 頭像
     }, { merge: true });
   }
 }
